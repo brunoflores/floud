@@ -16,6 +16,13 @@ provider "google" {
   zone    = var.zone
 }
 
+locals {
+  # Paths inside the VMs.
+  kube_lib_dir    = "/var/lib/kubernetes"
+  kubelet_lib_dir = "/var/lib/kubelet"
+  etcd_dir        = "/etc/etcd"
+}
+
 resource "google_compute_network" "floud" {
   name                    = "floud"
   auto_create_subnetworks = false # Custom.
@@ -128,10 +135,7 @@ resource "google_compute_instance" "worker" {
     automatic_restart = false
   }
 
-  tags = [
-    "kubernetes",
-    "worker",
-  ]
+  tags = var.worker_tags
 
   metadata = {
     user-data = <<-EOT
@@ -145,7 +149,7 @@ resource "google_compute_instance" "worker" {
           - ">> /var/log/cloud-final.out"
           - "/var/log/cloud-final.err"
       write_files:
-      - path: /home/brunoflores/ca.pem
+      - path: ${local.kubelet_lib_dir}/ca.pem
         permissions: 0644
         owner: root
         content: |
@@ -163,7 +167,7 @@ resource "google_compute_instance" "worker" {
   boot_disk {
     initialize_params {
       image = var.k8s_image
-      size  = 200 # GB.
+      size  = var.boot_disk_size[var.environment]
     }
   }
 
@@ -175,14 +179,7 @@ resource "google_compute_instance" "worker" {
   }
 
   service_account {
-    scopes = [
-      "compute-rw",
-      "storage-ro",
-      "service-management",
-      "service-control",
-      "logging-write",
-      "monitoring",
-    ]
+    scopes = var.service_account_scopes
   }
 }
 
@@ -193,10 +190,7 @@ resource "google_compute_instance" "controller" {
   machine_type   = var.machine_type[var.environment]
   can_ip_forward = true
 
-  tags = [
-    "kubernetes",
-    "controller",
-  ]
+  tags = var.controller_tags
 
   metadata = {
     user-data      = <<-EOT
@@ -210,52 +204,67 @@ resource "google_compute_instance" "controller" {
           - ">> /var/log/cloud-final.out"
           - "/var/log/cloud-final.err"
       write_files:
-      - path: /home/brunoflores/admin.kubeconfig
+      - path: ${local.kube_lib_dir}/admin.kubeconfig
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/admin.kubeconfig"))}
-      - path: /home/brunoflores/kube-scheduler.kubeconfig
+      - path: ${local.kube_lib_dir}/kube-scheduler.kubeconfig
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/kube-scheduler.kubeconfig"))}
-      - path: /home/brunoflores/kube-controller-manager.kubeconfig
+      - path: ${local.kube_lib_dir}/kube-controller-manager.kubeconfig
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/kube-controller-manager.kubeconfig"))}
-      - path: /home/brunoflores/encryption-config.yaml
+      - path: ${local.kube_lib_dir}/encryption-config.yaml
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/encryption-config.yaml"))}
-      - path: /home/brunoflores/service-account.pem
+      - path: ${local.kube_lib_dir}/service-account.pem
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/service-account.pem"))}
-      - path: /home/brunoflores/service-account-key.pem
+      - path: ${local.kube_lib_dir}/service-account-key.pem
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/service-account-key.pem"))}
-      - path: /home/brunoflores/kubernetes.pem
+      - path: ${local.etcd_dir}/kubernetes.pem
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/kubernetes.pem"))}
-      - path: /home/brunoflores/kubernetes-key.pem
+      - path: ${local.kube_lib_dir}/kubernetes.pem
+        permissions: 0644
+        owner: root
+        content: |
+          ${indent(4, file("${var.secrets_dir}/kubernetes.pem"))}
+      - path: ${local.etcd_dir}/kubernetes-key.pem
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/kubernetes-key.pem"))}
-      - path: /home/brunoflores/ca-key.pem
+      - path: ${local.kube_lib_dir}/kubernetes-key.pem
+        permissions: 0644
+        owner: root
+        content: |
+          ${indent(4, file("${var.secrets_dir}/kubernetes-key.pem"))}
+      - path: ${local.kube_lib_dir}/ca-key.pem
         permissions: 0644
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/ca-key.pem"))}
-      - path: /home/brunoflores/ca.pem
+      - path: ${local.etcd_dir}/ca.pem
+        permissions: 0644
+        owner: root
+        content: |
+          ${indent(4, file("${var.secrets_dir}/ca.pem"))}
+      - path: ${local.kube_lib_dir}/ca.pem
         permissions: 0644
         owner: root
         content: |
@@ -268,7 +277,7 @@ resource "google_compute_instance" "controller" {
   boot_disk {
     initialize_params {
       image = var.k8s_image
-      size  = 200 # GB.
+      size  = var.boot_disk_size[var.environment]
     }
   }
 
@@ -280,13 +289,6 @@ resource "google_compute_instance" "controller" {
   }
 
   service_account {
-    scopes = [
-      "compute-rw",
-      "storage-ro",
-      "service-management",
-      "service-control",
-      "logging-write",
-      "monitoring",
-    ]
+    scopes = var.service_account_scopes
   }
 }

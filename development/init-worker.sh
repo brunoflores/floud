@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-HOME=/home/brunoflores
 KUBE_LIB_DIR=/var/lib/kubernetes
 KUBELET_LIB_DIR=/var/lib/kubelet
 ATTRIBUTES_API="http://metadata.google.internal/computeMetadata/v1/instance/attributes"
@@ -11,8 +10,6 @@ POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" \
 
 # Disable swap
 sudo swapoff -a
-
-sudo mv $HOME/ca.pem $KUBE_LIB_DIR/
 
 echo "apiVersion: v1
 kind: Config
@@ -140,29 +137,8 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Configure the Kubernetes Proxy
-# TODO
+# TODO brunoflores configure the Kubernetes Proxy.
 
 sudo systemctl daemon-reload
 sudo systemctl enable containerd kubelet
 sudo systemctl start containerd kubelet
-
-# echo "{
-#     \"CN\": \"system:node:$(hostname)\",
-#     \"key\": { \"algo\": \"rsa\", \"size\": 2048 },
-#     \"names\": [
-#       {
-#         \"C\": \"AU\",
-#         \"L\": \"Brisbane\",
-#         \"O\": \"system:nodes\",
-#         \"OU\": \"R&D\",
-#         \"ST\": \"Queensland\"
-#       }
-#     ]
-#   }" > /home/brunoflores/$(hostname)-csr.json
-# curl "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" \
-#     -H "Metadata-Flavor: Google" -o /home/brunoflores/external-ip
-# curl "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip" \
-#     -H "Metadata-Flavor: Google" -o /home/brunoflores/internal-ip
-# cd /home/brunoflores
-# cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -hostname=$(hostname),$(cat external-ip),$(cat internal-ip) -profile=kubernetes $(hostname)-csr.json | cfssljson -bare $(hostname)

@@ -4,22 +4,11 @@ HOST_NAME=$(hostname -s)
 INTERNAL_IP=$(curl -s -H \
     "Metadata-Flavor: Google" \
     "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip")
-HOME=/home/brunoflores
 TMP=/tmp
 
 cd $TMP
 
-# etcd
-sudo cp ${HOME}/ca.pem ${HOME}/kubernetes-key.pem ${HOME}/kubernetes.pem \
-    /etc/etcd/
-
 # Configure the Kubernetes API Server
-sudo mv ${HOME}/ca.pem ${HOME}/ca-key.pem ${HOME}/kubernetes-key.pem \
-    ${HOME}/kubernetes.pem \
-    ${HOME}/service-account-key.pem ${HOME}/service-account.pem \
-    ${HOME}/encryption-config.yaml \
-    /var/lib/kubernetes/
-
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
 [Unit]
 Description=Kubernetes API Server
@@ -64,7 +53,6 @@ WantedBy=multi-user.target
 EOF
 
 # Configure the Kubernetes Controller Manager
-sudo mv ${HOME}/kube-controller-manager.kubeconfig /var/lib/kubernetes/
 cat <<EOF | sudo tee /etc/systemd/system/kube-controller-manager.service
 [Unit]
 Description=Kubernetes Controller Manager
@@ -92,7 +80,6 @@ WantedBy=multi-user.target
 EOF
 
 # Configure the Kubernetes Scheduler
-sudo mv ${HOME}/kube-scheduler.kubeconfig /var/lib/kubernetes/
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
 apiVersion: kubescheduler.config.k8s.io/v1alpha1
 kind: KubeSchedulerConfiguration
