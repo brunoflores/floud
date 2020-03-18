@@ -1,0 +1,22 @@
+{
+  "builders": [
+    {
+      "image_name": "floud-k8s-v1-0-1",
+      "image_description": "",
+      "machine_type": "n1-standard-1",
+      "type": "googlecompute",
+      "account_file": "../secrets/Personal-4a45ab7e93d2.json",
+      "project_id": "bruno-flores",
+      "source_image": "ubuntu-1804-bionic-v20200129a",
+      "zone": "australia-southeast1-a",
+      "communicator": "ssh",
+      "ssh_username": "packer"
+    }
+  ],
+  "provisioners": [
+      {
+        "type": "shell",
+        "script": "floud-k8s-image-provisioner.sh"
+      }
+  ]
+}
