@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+####################################################################
+#                                                                  #
+# This VM image is shared between the control plane and all nodes. #
+#                                                                  #
+####################################################################
+
 # Start: package manager
 sudo apt-get update
 # nginx is used to proxy HTTP health checks
 sudo apt-get install -y nginx
-# Folowing list is used by the nodes
+# Following list is used by the nodes
 sudo apt-get -y install socat conntrack ipset
 # End: package manager
 
