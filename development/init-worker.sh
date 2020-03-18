@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 HOME=/home/brunoflores
 KUBE_LIB_DIR=/var/lib/kubernetes

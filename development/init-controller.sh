@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 HOST_NAME=$(hostname -s)
 INTERNAL_IP=$(curl -s -H \
