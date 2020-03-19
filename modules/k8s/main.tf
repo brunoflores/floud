@@ -269,3 +269,12 @@ resource "google_compute_instance" "controller" {
     scopes = var.service_account_scopes
   }
 }
+
+resource "google_compute_route" "kubernetes" {
+  count = var.worker_count
+
+  name        = "kubernetes-route-10-200-${count.index}-0-24"
+  network     = var.network
+  next_hop_ip = "10.240.0.2${count.index}"
+  dest_range  = "10.200.${count.index}.0/24"
+}
