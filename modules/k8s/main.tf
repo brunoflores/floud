@@ -1,8 +1,9 @@
 locals {
   # Paths inside the VMs.
-  kube_lib_dir    = "/var/lib/kubernetes"
-  kubelet_lib_dir = "/var/lib/kubelet"
-  etcd_dir        = "/etc/etcd"
+  kube_lib_dir      = "/var/lib/kubernetes"
+  kubelet_lib_dir   = "/var/lib/kubelet"
+  kubeproxy_lib_dir = "/var/lib/kube-proxy"
+  etcd_dir          = "/etc/etcd"
 }
 
 resource "google_compute_subnetwork" "kubernetes" {
@@ -131,6 +132,37 @@ resource "google_compute_instance" "worker" {
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/ca.pem"))}
+      - path: ${local.kubeproxy_lib_dir}/kubeconfig
+        permissions: 0644
+        owner: root
+        content: |
+          ${indent(4, file("${var.secrets_dir}/kube-proxy.kubeconfig"))}
+      - path: ${local.kubeproxy_lib_dir}/kube-proxy-config.yaml
+        permissions: 0644
+        owner: root
+        content: |
+          kind: KubeProxyConfiguration
+          apiVersion: kubeproxy.config.k8s.io/v1alpha1
+          clientConnection:
+            kubeconfig: "${local.kubeproxy_lib_dir}/kubeconfig"
+          mode: "iptables"
+          clusterCIDR: "10.200.0.0/16"
+      - path: /etc/systemd/system/kube-proxy.service
+        permissions: 0644
+        owner: root
+        content: |
+          [Unit]
+          Description=Kubernetes Kube Proxy
+          Documentation=https://github.com/kubernetes/kubernetes
+
+          [Service]
+          ExecStart=/usr/local/bin/kube-proxy \
+            --config=${local.kubeproxy_lib_dir}/kube-proxy-config.yaml
+          Restart=on-failure
+          RestartSec=5
+
+          [Install]
+          WantedBy=multi-user.target
     EOT
     # `kube-api` is being interpolated with `https://${}:6443` at bootstrap time.
     # See the worker bootstrap script.

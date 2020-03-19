@@ -110,6 +110,7 @@ clusterDNS:
 podCIDR: "${POD_CIDR}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
+serverTLSBootstrap: true
 EOF
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
@@ -137,8 +138,13 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# TODO brunoflores configure the Kubernetes Proxy.
-
 sudo systemctl daemon-reload
-sudo systemctl enable containerd kubelet
-sudo systemctl start containerd kubelet
+
+sudo systemctl enable containerd
+sudo systemctl start containerd
+
+sudo systemctl enable kubelet
+sudo systemctl start kubelet
+
+sudo systemctl enable kube-proxy
+sudo systemctl start kube-proxy
