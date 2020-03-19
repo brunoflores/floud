@@ -8,4 +8,5 @@ $ terraform apply \
 $ terraform apply
 $ kubectl apply -f modules/k8s/config/
 $ kubectl apply -f secrets/secret-bootstrap-token-07401b.yaml
+$ kubectl apply -f coredns.yaml
 ```
