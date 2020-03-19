@@ -28,6 +28,10 @@ module "k8s" {
   region           = var.region
   zone             = var.zone
   secrets_dir      = "/Users/brunoflores/devel/kubernetes-the-hard-way/certs"
-  controller_count = 3
-  worker_count     = 3
+  controller_count = var.k8s_controller_count
+  worker_count     = var.k8s_worker_count
+  environment      = var.environment
+  k8s_image        = var.k8s_image
+  bootstrap_token  = var.k8s_bootstrap_token
+  cidrs            = var.k8s_cidrs
 }

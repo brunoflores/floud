@@ -126,7 +126,7 @@ resource "google_compute_instance" "worker" {
           - ">> /var/log/cloud-final.out"
           - "/var/log/cloud-final.err"
       write_files:
-      - path: ${local.kubelet_lib_dir}/ca.pem
+      - path: ${local.kube_lib_dir}/ca.pem
         permissions: 0644
         owner: root
         content: |
