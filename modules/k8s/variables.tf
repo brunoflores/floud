@@ -1,17 +1,14 @@
-variable "project" {}
+variable "secrets_dir" {}
 
-variable "credentials_file" {}
+variable "network" {}
 
-variable "region" {
-  default = "australia-southeast1"
-}
+variable "region" {}
 
-variable "zone" {
-  default = "australia-southeast1-a"
-}
+variable "zone" {}
 
 variable "controller_count" {
-  default = 3
+  default     = 3
+  description = "Number of controllers in the Control Plane."
 }
 
 variable "controller_prefix" {
@@ -26,7 +23,7 @@ variable "controller_tags" {
 }
 
 variable "worker_count" {
-  default = 1
+  default = 3
 }
 
 variable "worker_prefix" {
@@ -87,11 +84,16 @@ variable "service_account_scopes" {
   ]
 }
 
-variable "secrets_dir" {
-  default = "./secrets"
-}
-
 variable "bootstrap_token" {
   default     = ""
   description = "Auth token for TLS bootstrap. Keep it secret."
+}
+
+variable "ip_cidr_range" {
+  default = "10.240.0.0/24" # Can host up to 254 compute instances.
+}
+
+variable "bootstrap_dir" {
+  description = "Dir where the bootstrap scripts are."
+  default     = "./modules/k8s"
 }

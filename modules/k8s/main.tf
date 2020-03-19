@@ -1,21 +1,3 @@
-terraform {
-  backend "gcs" {
-    credentials = "../secrets/Personal-4a45ab7e93d2.json"
-    bucket      = "tf-state-floud"
-    prefix      = "terraform/state"
-  }
-}
-
-provider "google" {
-  version = "3.5.0"
-
-  credentials = file(var.credentials_file)
-
-  project = var.project
-  region  = var.region
-  zone    = var.zone
-}
-
 locals {
   # Paths inside the VMs.
   kube_lib_dir    = "/var/lib/kubernetes"
@@ -23,21 +5,16 @@ locals {
   etcd_dir        = "/etc/etcd"
 }
 
-resource "google_compute_network" "floud" {
-  name                    = "floud"
-  auto_create_subnetworks = false # Custom.
-}
-
 resource "google_compute_subnetwork" "kubernetes" {
   name          = "kubernetes"
-  network       = google_compute_network.floud.name
-  ip_cidr_range = "10.240.0.0/24" # Can host up to 254 compute instances.
+  network       = var.network
+  ip_cidr_range = var.ip_cidr_range
   region        = var.region
 }
 
 resource "google_compute_firewall" "k8s-allow-internal" {
   name          = "k8s-allow-internal"
-  network       = google_compute_network.floud.name
+  network       = var.network
   source_ranges = ["10.240.0.0/24", "10.200.0.0/16"]
 
   allow {
@@ -55,7 +32,7 @@ resource "google_compute_firewall" "k8s-allow-internal" {
 
 resource "google_compute_firewall" "k8s-allow-external" {
   name          = "k8s-allow-external"
-  network       = google_compute_network.floud.name
+  network       = var.network
   source_ranges = ["0.0.0.0/0"]
 
   allow {
@@ -75,7 +52,7 @@ resource "google_compute_firewall" "k8s-allow-external" {
 
 resource "google_compute_firewall" "kubernetes-allow-health-check" {
   name    = "kubernetes-allow-health-check"
-  network = google_compute_network.floud.name
+  network = var.network
 
   allow {
     protocol = "tcp"
@@ -159,7 +136,7 @@ resource "google_compute_instance" "worker" {
     # See the worker bootstrap script.
     kube-api        = google_compute_address.kubernetes.address
     bootstrap-token = var.bootstrap_token
-    startup-script  = file("init-worker.sh")
+    startup-script  = file("${var.bootstrap_dir}/init-worker.sh")
     pod-cidr        = "10.200.${count.index}.0/24"
     disk-image      = var.k8s_image
   }
@@ -172,7 +149,7 @@ resource "google_compute_instance" "worker" {
   }
 
   network_interface {
-    network    = google_compute_network.floud.name
+    network    = var.network
     subnetwork = google_compute_subnetwork.kubernetes.name
     network_ip = "10.240.0.2${count.index}"
     access_config {}
@@ -270,7 +247,7 @@ resource "google_compute_instance" "controller" {
         content: |
           ${indent(4, file("${var.secrets_dir}/ca.pem"))}
     EOT
-    startup-script = file("init-controller.sh")
+    startup-script = file("${var.bootstrap_dir}/init-controller.sh")
     disk-image     = var.k8s_image
   }
 
@@ -282,7 +259,7 @@ resource "google_compute_instance" "controller" {
   }
 
   network_interface {
-    network    = google_compute_network.floud.name
+    network    = var.network
     subnetwork = google_compute_subnetwork.kubernetes.name
     network_ip = "10.240.0.1${count.index}"
     access_config {}
