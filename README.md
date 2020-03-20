@@ -24,16 +24,22 @@ $ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templ
 $ helm init --service-account tiller --upgrade
 ```
 
-# Vault
+## Vault
 
 ```sh
 $ helm3 install --values helm-vault-values.yml vault /Users/brunoflores/devel/vault-helm/
 ```
 
-# GCP
+## GCP
 
 These are the roles on the service account required by the GCE Cloud Provider on
 Kubernetes.
+
+https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/
+
+https://github.com/kubernetes/cloud-provider-gcp
+
+https://stackoverflow.com/questions/50100219/kubernetes-failed-to-get-gce-gcecloudprovider-with-error-nil
 
 ```sh
 $ gcloud projects add-iam-policy-binding bruno-flores \
