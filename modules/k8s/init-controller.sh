@@ -44,6 +44,8 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
   --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \\
   --enable-bootstrap-token-auth \\
+  --cloud-provider=gce \\
+  --cloud-config=/etc/kubernetes/cloud-config \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -71,6 +73,8 @@ ExecStart=/usr/local/bin/kube-controller-manager \\
   --service-account-private-key-file=/var/lib/kubernetes/service-account-key.pem \\
   --service-cluster-ip-range=10.32.0.0/24 \\
   --use-service-account-credentials=true \\
+  --cloud-provider=gce \\
+  --cloud-config=/etc/kubernetes/cloud-config \\
   --v=2
 Restart=on-failure
 RestartSec=5

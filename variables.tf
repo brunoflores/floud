@@ -1,4 +1,6 @@
-variable "project" {}
+variable "project_id" {}
+
+variable "project_number" {}
 
 variable "credentials_file" {}
 
@@ -25,3 +27,7 @@ variable "k8s_image" {}
 variable "k8s_bootstrap_token" {}
 
 variable "k8s_cidrs" {}
+
+variable "k8s_service_account_email" {
+  description = "Service account to own the VMs."
+}

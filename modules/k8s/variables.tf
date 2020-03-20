@@ -1,3 +1,5 @@
+variable "project_id" {}
+
 variable "secrets_dir" {}
 
 variable "network" {}
@@ -76,7 +78,7 @@ variable "boot_disk_size" {
 variable "service_account_scopes" {
   default = [
     "compute-rw",
-    "storage-ro",
+    "storage-full",
     "service-management",
     "service-control",
     "logging-write",
@@ -96,4 +98,8 @@ variable "ip_cidr_range" {
 variable "bootstrap_dir" {
   description = "Dir where the bootstrap scripts are."
   default     = "./modules/k8s"
+}
+
+variable "service_account_email" {
+  description = "Service account to own the VMs."
 }

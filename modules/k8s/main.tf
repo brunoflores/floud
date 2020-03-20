@@ -163,6 +163,12 @@ resource "google_compute_instance" "worker" {
 
           [Install]
           WantedBy=multi-user.target
+      - path: /etc/kubernetes/cloud-config
+        permissions: 0644
+        owner: root
+        content: |
+          [Global]
+          project-id = "${var.project_id}"
     EOT
     # `kube-api` is being interpolated with `https://${}:6443` at bootstrap time.
     # See the worker bootstrap script.
@@ -188,6 +194,7 @@ resource "google_compute_instance" "worker" {
   }
 
   service_account {
+    email  = var.service_account_email
     scopes = var.service_account_scopes
   }
 }
@@ -278,6 +285,12 @@ resource "google_compute_instance" "controller" {
         owner: root
         content: |
           ${indent(4, file("${var.secrets_dir}/ca.pem"))}
+      - path: /etc/kubernetes/cloud-config
+        permissions: 0644
+        owner: root
+        content: |
+          [Global]
+          project-id = "${var.project_id}"
     EOT
     startup-script = file("${var.bootstrap_dir}/init-controller.sh")
     disk-image     = var.k8s_image
@@ -298,6 +311,7 @@ resource "google_compute_instance" "controller" {
   }
 
   service_account {
+    email  = var.service_account_email
     scopes = var.service_account_scopes
   }
 }
