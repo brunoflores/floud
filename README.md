@@ -28,6 +28,8 @@ $ helm init --service-account tiller --upgrade
 
 ```sh
 $ helm3 install --values helm-vault-values.yml vault /Users/brunoflores/devel/vault-helm/
+$ kubectl exec -it vault-0 -- vault operator init -key-shares=1 -key-threshold=1 -format=json > cluster-keys.json
+$ kubectl exec -it vault-0 -- vault operator unseal $(cat cluster-keys.json | jq -r ".unseal_keys_b64[]")
 ```
 
 ## GCP
@@ -48,4 +50,10 @@ $ gcloud projects add-iam-policy-binding bruno-flores \
 $ gcloud projects add-iam-policy-binding bruno-flores \
     --member serviceAccount:gce-k8s-user@bruno-flores.iam.gserviceaccount.com \
     --role roles/iam.serviceAccountUser
+$ gcloud projects add-iam-policy-binding bruno-flores \
+    --member serviceAccount:gce-k8s-user@bruno-flores.iam.gserviceaccount.com \
+    --role roles/compute.storageAdmin
+$ gcloud projects add-iam-policy-binding bruno-flores \
+    --member serviceAccount:gce-k8s-user@bruno-flores.iam.gserviceaccount.com \
+    --role roles/compute.networkAdmin
 ```
