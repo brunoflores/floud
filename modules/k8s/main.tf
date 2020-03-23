@@ -195,7 +195,7 @@ resource "google_compute_instance" "worker" {
 
   service_account {
     email  = var.service_account_email
-    scopes = var.service_account_scopes
+    scopes = var.worker_service_account_scopes
   }
 }
 
@@ -312,7 +312,7 @@ resource "google_compute_instance" "controller" {
 
   service_account {
     email  = var.service_account_email
-    scopes = var.service_account_scopes
+    scopes = var.controller_service_account_scopes
   }
 }
 

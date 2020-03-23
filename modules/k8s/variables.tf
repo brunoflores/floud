@@ -75,14 +75,15 @@ variable "boot_disk_size" {
   }
 }
 
-variable "service_account_scopes" {
+variable "worker_service_account_scopes" {
   default = [
-    "compute-rw",
-    "storage-full",
-    "service-management",
-    "service-control",
-    "logging-write",
-    "monitoring",
+    "cloud-platform",
+  ]
+}
+
+variable "controller_service_account_scopes" {
+  default = [
+    "cloud-platform",
   ]
 }
 
