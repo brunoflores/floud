@@ -52,7 +52,8 @@ metadata:
   namespace: kube-system
 data:
   Corefile: |
-    .:53 {
+    cluster.local:53 {
+        log
         errors
         health
         ready
@@ -65,6 +66,9 @@ data:
         loop
         reload
         loadbalance
+    }
+    . {
+        forward . 8.8.8.8
     }
 ---
 apiVersion: apps/v1
