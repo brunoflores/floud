@@ -129,6 +129,7 @@ ExecStart=/usr/local/bin/kubelet \\
   --bootstrap-kubeconfig=${KUBELET_LIB_DIR}/bootstrap-kubeconfig \\
   --cert-dir=${KUBELET_LIB_DIR} \\
   --network-plugin=cni \\
+  --cni-conf-dir=/etc/cni/net.d \\
   --register-node=true \\
   --cloud-provider=gce \\
   --cloud-config=/etc/kubernetes/cloud-config \\
@@ -139,6 +140,23 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# Start: Containerd
+# Ref https://v1-15.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd
+# https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
+cat << EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+cat << EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+sudo modprobe overlay
+sudo modprobe br_netfilter
+sudo sysctl --system
+# End: Containerd
 
 sudo systemctl daemon-reload
 
